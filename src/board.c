@@ -1,61 +1,56 @@
 #include "h_files/board.h"
 #include "h_files/mouse_click.h"
 
-static int cols = 9;
-static int rows = 9;
-static int bombs = 10;
-
-void set_variables(int mode)
+gd_t init_GameData(GtkWidget *stack, GtkWidget *grid)
 {
-	printf("DZIALAM\n");
-	
-	printf("%d\n", mode);
+	gd_t game_data = malloc(sizeof *game_data);
 
-	if(mode == 2)
-	{
-		printf("JESTEM W SRODKU\n");
+	game_data->cells = NULL;
+	game_data->grid = grid;
+	game_data->stack = stack;
 
-		cols = 16;
-		rows = 16;
-		bombs = 40;
+	return game_data;
+}
 
-		printf("%d %d %d\n", cols, rows, bombs);
-
-	}
-
+void set_variables(int mode, gd_t game_data)
+{
 	switch(mode)
 	{	
 		case 1:
-			cols = 9;
-			rows = 9;
-			bombs = 10;
+			game_data->cols = 9;
+			game_data->rows = 9;
+			game_data->bombs = 10;
 		break;
 
 		case 2:
-			cols = 16;
-			rows = 16;
-			bombs = 40;
+			game_data->cols = 16;
+			game_data->rows = 16;
+			game_data->bombs = 40;
 		break;
 
 		case 3:
-			cols = 30;
-			rows = 16;
-			bombs = 99;
+			game_data->cols = 30;
+			game_data->rows = 16;
+			game_data->bombs = 99;
 		break;
 	}
 
 	return;
 }
 
-cell_t **init_cells(GtkWidget *grid)
+cell_t **init_cells(gd_t game_data)
 {
+	int cols = game_data->cols;
+	int rows = game_data->rows;
+	int bombs = game_data->bombs;
+
         //inicjacja pierwszego wymiaru dwuwymiarowej tablicy wskaznikow do struktur
-        cell_t **cells = malloc(sizeof cells * cols);
+        cell_t **cells = malloc(sizeof(cell_t*) * cols);
 
         for(int i = 0; i < cols; i++)
         {
                 //inicjacja drugiego wymiaru dwuwymiarowej tablicy
-                cells[i] = malloc(sizeof cells * rows);
+                cells[i] = malloc(sizeof(cell_t) * rows);
 
                 for(int j = 0; j < rows; j++)
                 {
@@ -69,29 +64,32 @@ cell_t **init_cells(GtkWidget *grid)
                         //inicjacja przycisku
                         cells[i][j]->button = gtk_button_new_with_label("");
 
-                        //przypisanie komorki do siatki
-                        gtk_grid_attach(GTK_GRID(grid), cells[i][j]->button, i, j, 1, 1);
+			//przypisanie komorki do siatki
+                        gtk_grid_attach(GTK_GRID(game_data->grid), cells[i][j]->button, i, j, 1, 1);
 
                         //przypisanie przyciskowi funkcji
                         g_signal_connect(cells[i][j]->button, "button-press-event", G_CALLBACK(on_button_click), cells[i][j]);
                 }
         }
 
+	gtk_widget_show_all(game_data->grid);
+
         return cells;
 }
 
-void add_bombs(cell_t **cells)
+void add_bombs(gd_t game_data)
 {
         int x;
         int y;
 
-        for(int i = 0; i < bombs; i++)
-        {
-                x = rand() % cols;
-                y = rand() % rows;
 
-                if(!cells[x][y]->bomb && !cells[x][y]->revealed)
-                        cells[x][y]->bomb = true;
+        for(int i = 0; i < game_data->bombs; i++)
+        {
+                x = rand() % game_data->cols;
+                y = rand() % game_data->rows;
+
+                if(!game_data->cells[x][y]->bomb && !game_data->cells[x][y]->revealed)
+                        game_data->cells[x][y]->bomb = true;
 
                 else
                         i--;
@@ -100,8 +98,13 @@ void add_bombs(cell_t **cells)
         return;
 }
 
-void count_connections(cell_t **cells)
+void count_connections(gd_t game_data)
 {
+	int cols = game_data->cols;
+	int rows = game_data->rows;
+
+	cell_t **cells = game_data->cells;
+
         for(int i = 0; i < cols; i++)
         {
                 for(int j = 0; j < rows; j++)
@@ -121,8 +124,13 @@ void count_connections(cell_t **cells)
         }
 }
 
-void create_connections(cell_t **cells)
+void create_connections(gd_t game_data)
 {
+	int cols = game_data->cols;
+	int rows = game_data->rows;
+	
+	cell_t **cells = game_data->cells;
+
         for(int i = 0; i < cols; i++)
         {
                 for(int j = 0; j < rows; j++)
@@ -224,8 +232,13 @@ void create_connections(cell_t **cells)
 
 }
 
-void count_bombs(cell_t **cells)
+void count_bombs(gd_t game_data)
 {
+	int cols = game_data->cols;
+	int rows = game_data->rows;
+	
+	cell_t **cells = game_data->cells;
+
         for(int i = 0; i < cols; i++)
         {
                 for(int j = 0; j < rows; j++)
@@ -243,8 +256,13 @@ void count_bombs(cell_t **cells)
 
 }
 
-void game_over(cell_t **cells)
+void game_over(gd_t game_data)
 {
+	int cols = game_data->cols;
+	int rows = game_data->rows;
+
+	cell_t **cells = game_data->cells;
+
 	for(int i = 0; i < cols; i++)
 	{
 		for(int j = 0; j < rows; j++)
@@ -261,8 +279,13 @@ void game_over(cell_t **cells)
 
 }
 
-void win(cell_t **cells)
+void win(gd_t game_data)
 {
+	int cols = game_data->cols;
+	int rows = game_data->rows;
+	
+	cell_t **cells = game_data->cells;
+
 	for(int i = 0; i < cols; i++)
 	{	
 		for(int j = 0; j < rows; j++)
@@ -291,11 +314,13 @@ void win(cell_t **cells)
 
 }
 
-void free_memory(cell_t **cells)
+void free_memory(gd_t game_data)
 {
-	for(int i = 0; i < cols; i++)
+	cell_t **cells = game_data->cells;
+
+	for(int i = 0; i < game_data->cols; i++)
 	{
-		for(int j = 0; j < rows; j++)
+		for(int j = 0; j < game_data->rows; j++)
 		{
 			free(cells[i][j]->neighbour);
 			free(cells[i][j]);

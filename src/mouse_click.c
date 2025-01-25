@@ -2,11 +2,11 @@
 #include "h_files/board.h"
 
 static bool first_click = true;
-static cell_t **p_cells = NULL;
+static gd_t p_gd = NULL;
 
-void get_p_cells(cell_t **cells)
+void get_game_data(gd_t game_data)
 {
-	p_cells = cells;
+	p_gd = game_data;
 	return;
 }
 
@@ -17,14 +17,18 @@ gboolean on_button_click(GtkWidget *widget, GdkEventButton *event, gpointer data
         if(first_click)
         {
 		first_click = false;
+		cell->revealed = true;
                 
-		add_bombs(p_cells);
-                count_connections(p_cells);
-                create_connections(p_cells);
-                count_bombs(p_cells);
+		add_bombs(p_gd);
+                
+		cell->revealed = false;
+
+		count_connections(p_gd);
+                create_connections(p_gd);
+                count_bombs(p_gd);
 
 		on_left_click(cell);
-                cell->revealed = true;
+		cell->revealed = true;
         }
 
         if(event->button == GDK_BUTTON_PRIMARY)
@@ -49,7 +53,7 @@ void on_left_click(cell_t cell)
         if(cell->bomb)
 	{
 	        gtk_button_set_label(GTK_BUTTON(cell->button), "💣");
-		game_over(p_cells);
+		game_over(p_gd);
 	}
         else
         {
@@ -67,7 +71,7 @@ void on_left_click(cell_t cell)
                                         on_left_click(cell->neighbour[i]);
                 }
 
-		win(p_cells);
+		win(p_gd);
         }
 
         return;

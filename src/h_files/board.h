@@ -18,14 +18,25 @@ typedef struct cell
         struct cell **neighbour;
 } cell_o, *cell_t;
 
-void set_variables(int mode);
-cell_t **init_cells(GtkWidget *grid);
-void add_bombs(cell_t **cells);
-void count_connections(cell_t **cells);
-void create_connections(cell_t **cells);
-void count_bombs(cell_t **cells);
-void game_over(cell_t **cells);
-void win(cell_t **cells);
-void free_memory(cell_t **cells);
+typedef struct GameData
+{
+	GtkWidget *stack;
+	GtkWidget *grid;
+	cell_t **cells;
+	int cols;
+	int rows;
+	int bombs;
+} *gd_t;
+
+gd_t init_GameData(GtkWidget *stack, GtkWidget *grid);
+void set_variables(int mode, gd_t gama_data);
+cell_t **init_cells(gd_t game_data);
+void add_bombs(gd_t game_data);
+void count_connections(gd_t game_data);
+void create_connections(gd_t gama_data);
+void count_bombs(gd_t game_data);
+void game_over(gd_t game_data);
+void win(gd_t game_data);
+void free_memory(gd_t game_data);
 
 #endif

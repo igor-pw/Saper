@@ -1,7 +1,7 @@
 #include "board.h"
 #include <gtk/gtk.h>
 
-void get_p_cells(cell_t **cells);
+void get_game_data(gd_t game_data);
 gboolean on_button_click(GtkWidget *widget, GdkEventButton *event, gpointer data);
 void on_left_click(cell_t cell);
 void on_right_click(cell_t cell);
