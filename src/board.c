@@ -306,10 +306,7 @@ void game_over(gd_t game_data)
 			cells[i][j]->revealed = true;
 
 			if(cells[i][j]->bomb)
-			{
 				gtk_button_set_label(GTK_BUTTON(cells[i][j]->button), "💣");
-				//sleep(0.5);
-			}
 		}
 	}
 	
@@ -332,28 +329,9 @@ void win(gd_t game_data)
 			}
 		}
 
-		
-	GtkWidget *new_window = gtk_window_new(GTK_WINDOW_POPUP);
-	gtk_window_set_title(GTK_WINDOW(new_window), "");
-	gtk_window_set_default_size(GTK_WINDOW(new_window), 300, 200);
-	
-	gtk_window_set_transient_for(GTK_WINDOW(new_window), GTK_WINDOW(game_data->window));
-	gtk_window_set_modal(GTK_WINDOW(new_window), FALSE); // Sprawia, że okno nadrzędne jest niedostępne
-
-	
-
-	gtk_widget_show_all(new_window);
+	game_won(game_data);
 
 	}
-	
-
-
-
-
-	//free_memory(cells);
-
-	//gtk_main_quit();
-
 }
 
 void reset_board(gd_t game_data)
