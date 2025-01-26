@@ -1,14 +1,18 @@
 #include "h_files/board.h"
 #include "h_files/mouse_click.h"
+#include "h_files/after_game.h"
 
-gd_t init_GameData(GtkWidget *stack, GtkWidget *grid)
+gd_t init_GameData(GtkWidget *window, GtkWidget *stack, GtkWidget *board, GtkWidget *timer_label, GtkWidget *points_label, GtkWidget *flags_label)
 {
 	gd_t game_data = malloc(sizeof *game_data);
 
+	game_data->flags_label = flags_label;
+	game_data->points_label = points_label;
+	game_data->timer_label = timer_label;
 	game_data->cells = NULL;
-	game_data->grid = grid;
+	game_data->grid = board;
 	game_data->stack = stack;
-
+	game_data->window = window;
 	return game_data;
 }
 
@@ -17,32 +21,64 @@ void set_variables(int mode, gd_t game_data)
 	switch(mode)
 	{	
 		case 1:
+			game_data->mode = 1;
 			game_data->cols = 9;
 			game_data->rows = 9;
 			game_data->bombs = 10;
+			game_data->flags = 10;
 		break;
 
 		case 2:
+			game_data->mode = 2;
 			game_data->cols = 16;
 			game_data->rows = 16;
 			game_data->bombs = 40;
+			game_data->flags = 40;
 		break;
 
 		case 3:
+			game_data->mode = 3;
 			game_data->cols = 30;
 			game_data->rows = 16;
 			game_data->bombs = 99;
+			game_data->flags = 99;
 		break;
 	}
+
+	update_flags_label(game_data);
 
 	return;
 }
 
-cell_t **init_cells(gd_t game_data)
+void update_points_label(gd_t game_data)
+{
+	int current_points = 10*game_data->revealed*game_data->mode;
+
+	char points[10];
+	sprintf(points, "%d", current_points);
+
+	gtk_label_set_text(GTK_LABEL(game_data->points_label), points);
+
+	return;
+}
+
+void update_flags_label(gd_t game_data)
+{
+	char flags[3];
+	sprintf(flags, "%d", game_data->flags);
+
+	gtk_label_set_text(GTK_LABEL(game_data->flags_label), flags);
+	
+	return;
+}
+
+cell_t **init_board(gd_t game_data)
 {
 	int cols = game_data->cols;
 	int rows = game_data->rows;
 	int bombs = game_data->bombs;
+
+	game_data->revealed = 0;
 
         //inicjacja pierwszego wymiaru dwuwymiarowej tablicy wskaznikow do struktur
         cell_t **cells = malloc(sizeof(cell_t*) * cols);
@@ -276,37 +312,43 @@ void game_over(gd_t game_data)
 			}
 		}
 	}
-
+	
+	game_lost(game_data);
 }
 
 void win(gd_t game_data)
 {
-	int cols = game_data->cols;
-	int rows = game_data->rows;
-	
-	cell_t **cells = game_data->cells;
-
-	for(int i = 0; i < cols; i++)
-	{	
-		for(int j = 0; j < rows; j++)
-		{
-			if(!cells[i][j]->revealed && !cells[i][j]->bomb)
-				return;
-		}
-
-	}
-
-	for(int i = 0; i < cols; i++)
+	if(game_data->revealed == (game_data->cols*game_data->rows - game_data->bombs))
 	{
-		for(int j = 0; j < rows; j++)
+		for(int i = 0; i < game_data->cols; i++)
 		{
-			if(cells[i][j]->bomb)
+			for(int j = 0; j < game_data->rows; j++)
 			{
-				cells[i][j]->revealed = true;
-				gtk_button_set_label(GTK_BUTTON(cells[i][j]->button), "💣");
+				if(game_data->cells[i][j]->bomb)
+				{
+					game_data->cells[i][j]->revealed = true;
+					gtk_button_set_label(GTK_BUTTON(game_data->cells[i][j]->button), "💣");
+				}
 			}
 		}
+
+		
+	GtkWidget *new_window = gtk_window_new(GTK_WINDOW_POPUP);
+	gtk_window_set_title(GTK_WINDOW(new_window), "");
+	gtk_window_set_default_size(GTK_WINDOW(new_window), 300, 200);
+	
+	gtk_window_set_transient_for(GTK_WINDOW(new_window), GTK_WINDOW(game_data->window));
+	gtk_window_set_modal(GTK_WINDOW(new_window), FALSE); // Sprawia, że okno nadrzędne jest niedostępne
+
+	
+
+	gtk_widget_show_all(new_window);
+
 	}
+	
+
+
+
 
 	//free_memory(cells);
 
@@ -314,7 +356,7 @@ void win(gd_t game_data)
 
 }
 
-void free_memory(gd_t game_data)
+void reset_board(gd_t game_data)
 {
 	cell_t **cells = game_data->cells;
 
@@ -323,6 +365,7 @@ void free_memory(gd_t game_data)
 		for(int j = 0; j < game_data->rows; j++)
 		{
 			free(cells[i][j]->neighbour);
+			gtk_widget_destroy(cells[i][j]->button);
 			free(cells[i][j]);
 		}
 
