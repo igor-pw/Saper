@@ -27,6 +27,7 @@ typedef struct GameData
 	GtkEntry *rows_entry;
 	GtkEntry *cols_entry;
 	GtkEntry *bombs_entry;
+	GtkEntry *file_entry;
 	cell_t **cells;
 	int mode;
 	int flags;

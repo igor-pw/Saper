@@ -1,12 +1,19 @@
 #include "h_files/mouse_click.h"
 #include "h_files/board.h"
 
-static bool first_click = true;
+static bool first_click = false;
+static bool board_loaded = false;
 static gd_t p_gd = NULL;
 
 void set_first_click_true()
 {
 	first_click = true;
+	return;
+}
+
+void set_board_loaded_true()
+{
+	board_loaded = true;
 	return;
 }
 
@@ -61,7 +68,8 @@ void on_left_click(cell_t cell)
         if(cell->bomb)
 	{
 	        gtk_button_set_label(GTK_BUTTON(cell->button), "💣");
-		game_over(p_gd);
+		if(!board_loaded)
+			game_over(p_gd);
 	}
         else
         {
@@ -81,8 +89,9 @@ void on_left_click(cell_t cell)
 		
 		if(!cell->bomb)
 			update_points_label(p_gd);
-		
-		win(p_gd);
+
+		if(!board_loaded)		
+			win(p_gd);
         }
 
         return;

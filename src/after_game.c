@@ -245,9 +245,134 @@ void game_won(gd_t game_data)
 	save_player_name(game_won, game_data);
 
         gtk_window_set_transient_for(GTK_WINDOW(new_window), GTK_WINDOW(game_data->window));
-        gtk_window_set_modal(GTK_WINDOW(new_window), FALSE); // Sprawia, że okno nadrzędne jest niedostępne
+        gtk_window_set_modal(GTK_WINDOW(new_window), FALSE);
 
         after_game_window = new_window;	
         gtk_widget_show_all(new_window);
+}
+
+void board_loaded_won(gd_t game_data, int correct_moves)
+{
+	GtkWidget *new_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        gtk_window_set_title(GTK_WINDOW(new_window), "");
+        gtk_window_set_default_size(GTK_WINDOW(new_window), 400, 200);
+
+        GtkWidget *game_won = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+        gtk_container_add(GTK_CONTAINER(new_window), game_won);
+
+        char label[50] = "You won\nYour score: ";
+
+        strcat(label, gtk_label_get_text(GTK_LABEL(game_data->points_label)));
+
+        GtkWidget *final_points = gtk_label_new(label);
+        gtk_box_pack_start(GTK_BOX(game_won), final_points, FALSE, FALSE, 20);
+        gtk_label_set_justify(GTK_LABEL(final_points), GTK_JUSTIFY_CENTER);
+        gtk_widget_set_size_request(final_points, 200, 50);
+
+	char moves[50];
+
+	sprintf(moves, "Correct moves: %d", correct_moves);
+
+	GtkWidget *moves_info = gtk_label_new(moves);
+	gtk_box_pack_start(GTK_BOX(game_won), moves_info, FALSE, FALSE, 0);
+        gtk_label_set_justify(GTK_LABEL(moves_info), GTK_JUSTIFY_CENTER);
+        gtk_widget_set_size_request(moves_info, 200, 50);
+	
+	GtkWidget *back_to_menu = gtk_button_new_with_label("Back to menu");
+        g_signal_connect(back_to_menu, "clicked", G_CALLBACK(on_back_to_menu), game_data);
+        gtk_widget_set_valign(back_to_menu, GTK_ALIGN_CENTER);
+        gtk_widget_set_vexpand(back_to_menu, FALSE);
+	gtk_box_pack_start(GTK_BOX(game_won), back_to_menu, FALSE, FALSE, 0);
+        gtk_widget_set_size_request(back_to_menu, 150, 30);
+
+	after_game_window = new_window;
+		
+	gtk_window_set_transient_for(GTK_WINDOW(new_window), GTK_WINDOW(game_data->window));
+        gtk_window_set_modal(GTK_WINDOW(new_window), FALSE);
+	gtk_widget_show_all(new_window);
+}
+
+void board_loaded_lost(gd_t game_data, int correct_moves)
+{
+        GtkWidget *new_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        gtk_window_set_title(GTK_WINDOW(new_window), "");
+        gtk_window_set_default_size(GTK_WINDOW(new_window), 400, 200);
+
+        GtkWidget *game_lost = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+        gtk_container_add(GTK_CONTAINER(new_window), game_lost);
+
+        char label[50] = "You lost\nYour score: ";
+
+        strcat(label, gtk_label_get_text(GTK_LABEL(game_data->points_label)));
+
+        GtkWidget *final_points = gtk_label_new(label);
+        gtk_box_pack_start(GTK_BOX(game_lost), final_points, FALSE, FALSE, 20);
+        gtk_label_set_justify(GTK_LABEL(final_points), GTK_JUSTIFY_CENTER);
+	gtk_widget_set_size_request(final_points, 200, 50);
+
+	char moves[50];
+
+        sprintf(moves, "Correct moves: %d", correct_moves);
+
+        GtkWidget *moves_info = gtk_label_new(moves);
+        gtk_box_pack_start(GTK_BOX(game_lost), moves_info, FALSE, FALSE, 0);
+        gtk_label_set_justify(GTK_LABEL(moves_info), GTK_JUSTIFY_CENTER);
+        gtk_widget_set_size_request(moves_info, 200, 50);
+
+	GtkWidget *back_to_menu = gtk_button_new_with_label("Back to menu");
+        g_signal_connect(back_to_menu, "clicked", G_CALLBACK(on_back_to_menu), game_data);
+	gtk_widget_set_valign(back_to_menu, GTK_ALIGN_CENTER);
+	gtk_widget_set_vexpand(back_to_menu, FALSE);
+        gtk_box_pack_start(GTK_BOX(game_lost), back_to_menu, FALSE, FALSE, 0);
+        gtk_widget_set_size_request(back_to_menu, 150, 30);
+
+	after_game_window = new_window;
+
+        gtk_window_set_transient_for(GTK_WINDOW(new_window), GTK_WINDOW(game_data->window));
+        gtk_window_set_modal(GTK_WINDOW(new_window), FALSE);
+
+        gtk_widget_show_all(new_window);
+}
+
+void board_loaded_unresolved(gd_t game_data, int correct_moves)
+{
+        GtkWidget *new_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        gtk_window_set_title(GTK_WINDOW(new_window), "");
+        gtk_window_set_default_size(GTK_WINDOW(new_window), 400, 200);
+
+        GtkWidget *game_unresolved = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+        gtk_container_add(GTK_CONTAINER(new_window), game_unresolved);
+
+        char label[50] = "Game unresolved\nYour score: ";
+
+        strcat(label, gtk_label_get_text(GTK_LABEL(game_data->points_label)));
+
+        GtkWidget *final_points = gtk_label_new(label);
+        gtk_box_pack_start(GTK_BOX(game_unresolved), final_points, FALSE, FALSE, 20);
+        gtk_label_set_justify(GTK_LABEL(final_points), GTK_JUSTIFY_CENTER);
+        gtk_widget_set_size_request(final_points, 200, 50);
+
+	char moves[50];
+
+        sprintf(moves, "Correct moves: %d", correct_moves);
+
+        GtkWidget *moves_info = gtk_label_new(moves);
+        gtk_box_pack_start(GTK_BOX(game_unresolved), moves_info, FALSE, FALSE, 0);
+        gtk_label_set_justify(GTK_LABEL(moves_info), GTK_JUSTIFY_CENTER);
+        gtk_widget_set_size_request(moves_info, 200, 50);
+
+	GtkWidget *back_to_menu = gtk_button_new_with_label("Back to menu");
+	g_signal_connect(back_to_menu, "clicked", G_CALLBACK(on_back_to_menu), game_data);
+	gtk_widget_set_valign(back_to_menu, GTK_ALIGN_CENTER);
+	gtk_widget_set_vexpand(back_to_menu, FALSE);
+	gtk_box_pack_start(GTK_BOX(game_unresolved), back_to_menu, FALSE, FALSE, 0);
+        gtk_widget_set_size_request(back_to_menu, 150, 30);
+
+	after_game_window = new_window;
+
+        gtk_window_set_transient_for(GTK_WINDOW(new_window), GTK_WINDOW(game_data->window));
+        gtk_window_set_modal(GTK_WINDOW(new_window), FALSE);
+
+	gtk_widget_show_all(new_window);
 }
 
