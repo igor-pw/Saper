@@ -2,6 +2,9 @@
 #include "h_files/mouse_click.h"
 #include "h_files/after_game.h"
 
+static int time_value = 0;
+static bool end = false;
+
 gd_t init_GameData(GtkWidget *window, GtkWidget *stack, GtkWidget *board, GtkWidget *timer_label, GtkWidget *points_label, GtkWidget *flags_label)
 {
 	gd_t game_data = malloc(sizeof *game_data);
@@ -14,6 +17,35 @@ gd_t init_GameData(GtkWidget *window, GtkWidget *stack, GtkWidget *board, GtkWid
 	game_data->stack = stack;
 	game_data->window = window;
 	return game_data;
+}
+
+void set_end_false()
+{
+	end = false;
+	return;
+}
+
+gboolean update_timer(gpointer data) {
+    
+	gd_t game_data = (gd_t)data;
+	
+	time_value++;
+
+    	char buffer[50];
+    	sprintf(buffer, "%d", time_value);
+    	gtk_label_set_text(GTK_LABEL(game_data->timer_label), buffer);
+
+    	if (time_value >= 999 || end)
+	{
+        	time_value = 0;
+		return FALSE; 
+	}
+   	return TRUE;
+}
+
+void start_timer(gd_t game_data) 
+{
+   	g_timeout_add(1000, update_timer, game_data);
 }
 
 void set_variables(int mode, gd_t game_data)
@@ -74,6 +106,7 @@ void update_flags_label(gd_t game_data)
 
 cell_t **init_board(gd_t game_data)
 {
+	end = false;
 	int cols = game_data->cols;
 	int rows = game_data->rows;
 	int bombs = game_data->bombs;
@@ -294,6 +327,8 @@ void count_bombs(gd_t game_data)
 
 void game_over(gd_t game_data)
 {
+	end = true;
+
 	int cols = game_data->cols;
 	int rows = game_data->rows;
 

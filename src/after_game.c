@@ -10,11 +10,15 @@ static GtkWidget *p_player_name = NULL;
 
 void on_play_again(GtkWidget *play_again, gpointer data)
 {
+	set_end_false();
 	gd_t game_data = (gd_t)data;
 
 	reset_board(game_data);
 	set_first_click_true();
 	gtk_label_set_text(GTK_LABEL(game_data->points_label), "0");
+
+	gtk_label_set_text(GTK_LABEL(game_data->timer_label), "0");
+	start_timer(game_data);
 
 	char flags[3];
 	game_data->flags = game_data->bombs;
@@ -55,11 +59,14 @@ void show_scoreboard()
 
 void on_back_to_menu(GtkWidget *back_to_menu, gpointer data)
 {
+	set_end_false();
 	gd_t game_data = (gd_t)data;
 
 	reset_board(game_data);
 	set_first_click_true();
 	gtk_label_set_text(GTK_LABEL(game_data->points_label), "0");
+
+	gtk_label_set_text(GTK_LABEL(game_data->timer_label), "0");
 
 	char flags[3];
         game_data->flags = game_data->bombs;
@@ -215,8 +222,7 @@ void game_lost(gd_t game_data)
 	save_player_name(game_lost, game_data);
 
         gtk_window_set_transient_for(GTK_WINDOW(new_window), GTK_WINDOW(game_data->window));
-        gtk_window_set_modal(GTK_WINDOW(new_window), FALSE); // Sprawia, że okno nadrzędne jest niedostępne
-
+        gtk_window_set_modal(GTK_WINDOW(new_window), FALSE); 
 	after_game_window = new_window;
         gtk_widget_show_all(new_window);
 
@@ -276,12 +282,12 @@ void board_loaded_won(gd_t game_data, int correct_moves)
 	GtkWidget *moves_info = gtk_label_new(moves);
 	gtk_box_pack_start(GTK_BOX(game_won), moves_info, FALSE, FALSE, 0);
         gtk_label_set_justify(GTK_LABEL(moves_info), GTK_JUSTIFY_CENTER);
-        gtk_widget_set_size_request(moves_info, 200, 50);
+        gtk_widget_set_size_request(moves_info, 150, 50);
 	
 	GtkWidget *back_to_menu = gtk_button_new_with_label("Back to menu");
         g_signal_connect(back_to_menu, "clicked", G_CALLBACK(on_back_to_menu), game_data);
         gtk_widget_set_valign(back_to_menu, GTK_ALIGN_CENTER);
-        gtk_widget_set_vexpand(back_to_menu, FALSE);
+	gtk_widget_set_halign(back_to_menu, GTK_ALIGN_CENTER);
 	gtk_box_pack_start(GTK_BOX(game_won), back_to_menu, FALSE, FALSE, 0);
         gtk_widget_set_size_request(back_to_menu, 150, 30);
 
@@ -321,9 +327,9 @@ void board_loaded_lost(gd_t game_data, int correct_moves)
 
 	GtkWidget *back_to_menu = gtk_button_new_with_label("Back to menu");
         g_signal_connect(back_to_menu, "clicked", G_CALLBACK(on_back_to_menu), game_data);
-	gtk_widget_set_valign(back_to_menu, GTK_ALIGN_CENTER);
-	gtk_widget_set_vexpand(back_to_menu, FALSE);
-        gtk_box_pack_start(GTK_BOX(game_lost), back_to_menu, FALSE, FALSE, 0);
+        gtk_widget_set_valign(back_to_menu, GTK_ALIGN_CENTER);
+        gtk_widget_set_halign(back_to_menu, GTK_ALIGN_CENTER);
+	gtk_box_pack_start(GTK_BOX(game_lost), back_to_menu, FALSE, FALSE, 0);
         gtk_widget_set_size_request(back_to_menu, 150, 30);
 
 	after_game_window = new_window;
@@ -364,7 +370,7 @@ void board_loaded_unresolved(gd_t game_data, int correct_moves)
 	GtkWidget *back_to_menu = gtk_button_new_with_label("Back to menu");
 	g_signal_connect(back_to_menu, "clicked", G_CALLBACK(on_back_to_menu), game_data);
 	gtk_widget_set_valign(back_to_menu, GTK_ALIGN_CENTER);
-	gtk_widget_set_vexpand(back_to_menu, FALSE);
+        gtk_widget_set_halign(back_to_menu, GTK_ALIGN_CENTER);
 	gtk_box_pack_start(GTK_BOX(game_unresolved), back_to_menu, FALSE, FALSE, 0);
         gtk_widget_set_size_request(back_to_menu, 150, 30);
 

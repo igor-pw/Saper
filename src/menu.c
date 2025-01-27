@@ -11,6 +11,7 @@ void on_easy_mode(GtkButton *button, gpointer game_data)
 
         //inicjacja komorek
         p_game_data->cells = init_board(p_game_data);
+	start_timer(p_game_data);
 
 	gtk_window_resize(GTK_WINDOW(p_game_data->window), p_game_data->cols*60, p_game_data->rows*50);
         gtk_stack_set_visible_child_name(GTK_STACK(p_game_data->stack), "game_view");
@@ -24,6 +25,7 @@ void on_medium_mode(GtkButton *button, gpointer game_data)
 	set_variables(2, p_game_data);
 
 	p_game_data->cells = init_board(p_game_data);
+	start_timer(p_game_data);
 
 	gtk_window_resize(GTK_WINDOW(p_game_data->window), p_game_data->cols*60, p_game_data->rows*50);
 	gtk_stack_set_visible_child_name(GTK_STACK(p_game_data->stack), "game_view");
@@ -37,6 +39,7 @@ void on_hard_mode(GtkButton *button, gpointer game_data)
 	set_variables(3, p_game_data);
 
 	p_game_data->cells = init_board(p_game_data);
+	start_timer(p_game_data);
 
 	gtk_window_resize(GTK_WINDOW(p_game_data->window), p_game_data->cols*60, p_game_data->rows*50);
 	gtk_stack_set_visible_child_name(GTK_STACK(p_game_data->stack), "game_view");
@@ -56,10 +59,19 @@ void on_custom_mode(GtkButton *button, gpointer game_data)
 	int cols = atoi(c_cols);
 	int bombs = atoi(c_bombs);
 
-	p_game_data->mode = 0;
+	//p_game_data->mode = 0;
 
 	if(rows >= 9 && cols >= 9 && bombs >= 10 && bombs < rows*cols)
 	{
+		if((cols >= 9 && cols < 16) || (rows >= 9 && rows < 16) || (bombs >= 10 && bombs < 40))
+			p_game_data->mode = 1;
+
+		else if((cols >= 16 && cols < 30) || (rows == 16) || (bombs >= 40 && bombs < 99))
+                        p_game_data->mode = 2;
+
+		else if((cols >= 30) || (rows > 16) || (bombs >= 99))
+                        p_game_data->mode = 3;
+
 		p_game_data->rows = rows;
 		p_game_data->cols = cols;
 		p_game_data->bombs = bombs;
@@ -67,6 +79,7 @@ void on_custom_mode(GtkButton *button, gpointer game_data)
 
 		p_game_data->cells = init_board(p_game_data);
 		update_flags_label(p_game_data);
+		start_timer(p_game_data);
 
 		gtk_window_resize(GTK_WINDOW(p_game_data->window), cols*60, rows*50);	
 		gtk_stack_set_visible_child_name(GTK_STACK(p_game_data->stack), "game_view");
@@ -115,6 +128,7 @@ void on_file_button(GtkWidget *file_button, gpointer data)
 
 	game_data->flags = bombs;
 
+	gtk_window_resize(GTK_WINDOW(game_data->window), cols*60, rows*50);
 	gtk_stack_set_visible_child_name(GTK_STACK(game_data->stack), "game_view");
 
 	char move;
@@ -128,11 +142,18 @@ void on_file_button(GtkWidget *file_button, gpointer data)
 			case 'r':
 			on_left_click(game_data->cells[x-1][y-1]);
 			
-			if(game_data->cells[x-1][y-1]->bomb && !end)
+			if(game_data->cells[x-1][y-1]->bomb && !end && !game_data->cells[x-1][y-1]->flagged)
 			{
 				end = true;
 				board_loaded_lost(game_data, correct_moves);
 			}
+
+			if(game_data->revealed == game_data->cols*game_data->rows - game_data->bombs && !end)
+        		{
+                		end = true;
+                		board_loaded_won(game_data, correct_moves);
+        		}
+
 			else
 				correct_moves++;			
 			break;
@@ -143,10 +164,7 @@ void on_file_button(GtkWidget *file_button, gpointer data)
 		}
 	}
 
-	if(game_data->revealed == game_data->cols*game_data->rows - game_data->bombs)
-		board_loaded_won(game_data, correct_moves);
-
-	else if(!end)
+	if(!end)
 		board_loaded_unresolved(game_data, correct_moves);
 
 	fclose(load_board);

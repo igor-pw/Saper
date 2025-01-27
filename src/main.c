@@ -7,12 +7,12 @@
 //funkcja obslugujaca zdarzenie kliknicia przycisku
 int main(int argc, char *argv[]) 
 {
-    	//inicjalizacja GTK
+    	//inicjalizacja interfejsu graficznego
     	gtk_init(&argc, &argv);
 
 	srand(time(NULL));
 
-    	//utworzenie głównego okna
+    	//utworzenie glownego okna
     	GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     	gtk_window_set_title(GTK_WINDOW(window), "Saper");
     	gtk_window_set_default_size(GTK_WINDOW(window), 450, 550);

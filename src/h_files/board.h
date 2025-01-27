@@ -14,7 +14,7 @@ typedef struct cell
         int connections;
         GtkWidget *button;
         struct cell **neighbour;
-} cell_o, *cell_t;
+} *cell_t;
 
 typedef struct GameData
 {
@@ -38,6 +38,9 @@ typedef struct GameData
 } *gd_t;
 
 gd_t init_GameData(GtkWidget *window, GtkWidget *stack, GtkWidget *board, GtkWidget *timer_label, GtkWidget *points_label, GtkWidget *flags_label);
+void set_end_false();
+gboolean update_timer(gpointer data);
+void start_timer(gd_t game_data);
 void set_variables(int mode, gd_t gama_data);
 void update_points_label(gd_t game_data);
 void update_flags_label(gd_t game_data);
